@@ -498,7 +498,7 @@ function toggleSystemView() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.location.pathname.includes('/pages/system.html')) {
+  if (window.location.pathname.includes('/frontend/pages/system.html')) {
     initSystemPage();
 
     // Close notifications when clicking outside

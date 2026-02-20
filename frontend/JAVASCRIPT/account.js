@@ -342,7 +342,7 @@ function deleteAccount() {
             setTimeout(() => {
                 sessionStorage.clear();
                 localStorage.clear();
-                window.location.href = '/pages/login.html';
+                window.location.href = '/frontend/pages/login.html';
             }, 5000);
         }
     } else if (userInput !== null) {
