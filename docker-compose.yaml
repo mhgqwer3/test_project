@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Database Service (MySQL) - يبدأ أولاً
+  database:
+    image: mysql:8.0
+    container_name: smart_bins_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_bins_system
+      MYSQL_USER: smart_bins_user
+      MYSQL_PASSWORD: smart_bins_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./backend/Database/smart_bins_system.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - smart_bins_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service (PHP with Apache)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smart_bins_backend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      DB_HOST: database
+      DB_NAME: smart_bins_system
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - smart_bins_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/API.php?action=list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service (Nginx)
+  frontend:
+    image: nginx:latest
+    container_name: smart_bins_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - smart_bins_network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  smart_bins_network:
+    driver: bridge
+
+volumes:
+  db_data:
