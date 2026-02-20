@@ -8,18 +8,21 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2enmod rewrite headers
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Copy application files
-COPY . /var/www/html/
+COPY ./backend /var/www/html/backend
+COPY ./frontend /var/www/html/frontend
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+    && chmod -R 755 /var/www/html \
+    && find /var/www/html -type f -exec chmod 644 {} \; \
+    && find /var/www/html -type d -exec chmod 755 {} \;
 
 # Expose port 80
 EXPOSE 80

@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Redirect root to login page
+RewriteRule ^$ /frontend/pages/login.html [R=301,L]
+RewriteRule ^index\.html$ /frontend/pages/login.html [R=301,L]
+
+# Allow direct access to all files
+Options -MultiViews
